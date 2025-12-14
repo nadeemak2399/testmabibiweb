@@ -13,7 +13,9 @@ import FAQBlockComponent from '@/blocks/FAQBlock/Component';
 
 
 
-const blockComponents = {
+type BlockType = Page['layout'][0]['blockType']
+
+const blockComponents: Partial<Record<BlockType, React.FC<any>>> = {
   archive: ArchiveBlock,
   content: ContentBlock,
   cta: CallToActionBlock,

@@ -2,21 +2,30 @@ import type { CollectionConfig } from 'payload'
 
 import {
   lexicalEditor,
+  BoldFeature,
+  ItalicFeature,
+  UnderlineFeature,
+  StrikethroughFeature,
+  SubscriptFeature,
+  SuperscriptFeature,
+  InlineCodeFeature,
+  ParagraphFeature,
+  HeadingFeature,
+  AlignFeature,
+  IndentFeature,
+  UnorderedListFeature,
+  OrderedListFeature,
+  ChecklistFeature,
+  LinkFeature,
+  BlockquoteFeature,
+  UploadFeature,
+  HorizontalRuleFeature,
   FixedToolbarFeature,
   InlineToolbarFeature,
-  HeadingFeature,
-  HorizontalRuleFeature,
-  OrderedListFeature,
-  UnorderedListFeature,
-  BlocksFeature,
-  EXPERIMENTAL_TableFeature,
 } from '@payloadcms/richtext-lexical'
 
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { Banner } from '../../blocks/Banner/config'
-import { Code } from '../../blocks/Code/config'
-import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
@@ -95,25 +104,41 @@ export const Posts: CollectionConfig<'posts'> = {
               type: 'upload',
               relationTo: 'media',
             },
-            {
-              name: 'content',
-              type: 'richText',
-              label: false,
-              required: true,
-              editor: lexicalEditor({
-                features: ({ rootFeatures }) => [
-                  ...rootFeatures,
-                  HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                  BlocksFeature({ blocks: [Banner, Code, MediaBlock] }),
-                  FixedToolbarFeature(),
-                  InlineToolbarFeature(),
-                  HorizontalRuleFeature(),
-                  EXPERIMENTAL_TableFeature(), // <-- Added table support
-                  UnorderedListFeature(),       // Bullets
-                  OrderedListFeature(),         // Numbered lists
-                ],
-              }),
-            },
+              {
+                name: 'content',
+                type: 'richText',
+                editor: lexicalEditor({
+                  features: ({ defaultFeatures, rootFeatures }) => [
+                    // Default basic text formatting:
+                    ...defaultFeatures,
+                    // Inline formatting features:
+                    BoldFeature(),
+                    ItalicFeature(),
+                    UnderlineFeature(),
+                    StrikethroughFeature(),
+                    SubscriptFeature(),
+                    SuperscriptFeature(),
+                    InlineCodeFeature(),
+                    // Block‑level formatting and structure:
+                    ParagraphFeature(),
+                    HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+                    AlignFeature(),
+                    IndentFeature(),
+                    UnorderedListFeature(),
+                    OrderedListFeature(),
+                    ChecklistFeature(),
+                    BlockquoteFeature(),
+                    // Links & media:
+                    LinkFeature(),
+                    UploadFeature(),
+                    // Other helpers:
+                    HorizontalRuleFeature(),
+                    // Toolbars:
+                    FixedToolbarFeature(),
+                    InlineToolbarFeature(),
+                  ],
+                }),
+              },
           ],
           label: 'Content',
         },

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-
 import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
@@ -10,12 +9,12 @@ import RichText from '@/components/RichText'
 import TocClient from './toc.client' // new client component (create file next)
 import type { Post } from '@/payload-types'
 import Link from 'next/link'
-import { PostHero } from '@/heros/PostHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import Image from 'next/image'
 import './style.css'
+import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -65,6 +64,18 @@ if (post.categories && Array.isArray(post.categories) && post.categories.length 
     categoryIds: post.categories.map((c: any) => c.id || c),
     currentPostId: post.id,
   })
+}
+
+
+const editorData: DefaultTypedEditorState = post.content as DefaultTypedEditorState || {
+  root: {
+    type: 'root',
+    children: [],
+    direction: null,
+    format: '',
+    indent: 0,
+    version: 1,
+  },
 }
 
 
@@ -258,7 +269,12 @@ if (post.categories && Array.isArray(post.categories) && post.categories.length 
   </div>
 )}
 
-  <RichText className="max-w-[48rem] mx-auto" data={post.content} enableGutter={false} />
+<RichText
+  className="max-w-[48rem] mx-auto"
+  data={editorData}
+  enableGutter={false}
+/>
+  
 </div>
 
               </div>

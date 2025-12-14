@@ -25,6 +25,26 @@ import {
 
 import {
   lexicalEditor,
+  BoldFeature,
+  ItalicFeature,
+  UnderlineFeature,
+  StrikethroughFeature,
+  SubscriptFeature,
+  SuperscriptFeature,
+  InlineCodeFeature,
+  ParagraphFeature,
+  HeadingFeature,
+  AlignFeature,
+  IndentFeature,
+  UnorderedListFeature,
+  OrderedListFeature,
+  ChecklistFeature,
+  LinkFeature,
+  BlockquoteFeature,
+  UploadFeature,
+  HorizontalRuleFeature,
+  FixedToolbarFeature,
+  InlineToolbarFeature,
   EXPERIMENTAL_TableFeature,
 } from '@payloadcms/richtext-lexical'
 
@@ -65,20 +85,19 @@ export const Pages: CollectionConfig<'pages'> = {
       required: true,
     },
     {
-    name: 'postURL',
-    type: 'text',
-    admin: { readOnly: true },
-    hooks: {
-      afterRead: [
-        ({ data }) => {
-          if (!data?.slug) return '';
-          const url = `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/posts/${data.slug}`;
-          return url;
-        },
-      ],
+      name: 'postURL',
+      type: 'text',
+      admin: { readOnly: true },
+      hooks: {
+        afterRead: [
+          ({ data }) => {
+            if (!data?.slug) return '';
+            return `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/posts/${data.slug}`;
+          },
+        ],
+      },
     },
-  },
-  {
+    {
       name: 'isHomePage',
       type: 'checkbox',
       label: 'Set as homepage',
@@ -90,10 +109,7 @@ export const Pages: CollectionConfig<'pages'> = {
     {
       type: 'tabs',
       tabs: [
-        {
-          fields: [hero],
-          label: 'Hero',
-        },
+        { fields: [hero], label: 'Hero' },
         {
           fields: [
             {
@@ -102,22 +118,37 @@ export const Pages: CollectionConfig<'pages'> = {
               blocks: [
                 {
                   slug: 'richTextBlock',
-                  labels: {
-                    singular: 'Rich Text',
-                    plural: 'Rich Texts',
-                  },
+                  labels: { singular: 'Rich Text', plural: 'Rich Texts' },
                   fields: [
                     {
                       name: 'content',
                       type: 'richText',
                       required: true,
                       editor: lexicalEditor({
-                        admin: {
-                          placeholder: 'Start writing here...',
-                        },
+                        admin: { placeholder: 'Start writing here...' },
                         features: ({ defaultFeatures }) => [
-                          ...defaultFeatures,         // keep default rich text features
-                          EXPERIMENTAL_TableFeature(), // enable table support
+                          ...defaultFeatures,
+                          BoldFeature(),
+                          ItalicFeature(),
+                          UnderlineFeature(),
+                          StrikethroughFeature(),
+                          SubscriptFeature(),
+                          SuperscriptFeature(),
+                          InlineCodeFeature(),
+                          ParagraphFeature(),
+                          HeadingFeature({ enabledHeadingSizes: ['h2','h3','h4','h5','h6'] }),
+                          AlignFeature(),
+                          IndentFeature(),
+                          UnorderedListFeature(),
+                          OrderedListFeature(),
+                          ChecklistFeature(),
+                          LinkFeature(),
+                          BlockquoteFeature(),
+                          UploadFeature(),
+                          HorizontalRuleFeature(),
+                          FixedToolbarFeature(),
+                          InlineToolbarFeature(),
+                          EXPERIMENTAL_TableFeature(), // table support
                         ],
                       }),
                     },
@@ -132,45 +163,34 @@ export const Pages: CollectionConfig<'pages'> = {
                 FAQBlock,
               ],
               required: true,
-              admin: {
-                initCollapsed: true,
-              },
+              admin: { initCollapsed: true },
             },
           ],
           label: 'Content',
         },
         {
-  name: 'meta',
-  label: 'SEO',
-  fields: [
-    OverviewField({
-      titlePath: 'meta.title',
-      descriptionPath: 'meta.description',
-      imagePath: 'meta.image',
-    }),
-    MetaTitleField({ hasGenerateFn: true }),
-    MetaImageField({ relationTo: 'media' }),
-    MetaDescriptionField({}),
-    {
-      name: 'robots',
-      type: 'text',
-      admin: { hidden: true },
-    },
-    PreviewField({
-      hasGenerateFn: true,
-      titlePath: 'meta.title',
-      descriptionPath: 'meta.description',
-    }),
-  ],
-}
-,
+          name: 'meta',
+          label: 'SEO',
+          fields: [
+            OverviewField({
+              titlePath: 'meta.title',
+              descriptionPath: 'meta.description',
+              imagePath: 'meta.image',
+            }),
+            MetaTitleField({ hasGenerateFn: true }),
+            MetaImageField({ relationTo: 'media' }),
+            MetaDescriptionField({}),
+            { name: 'robots', type: 'text', admin: { hidden: true } },
+            PreviewField({
+              hasGenerateFn: true,
+              titlePath: 'meta.title',
+              descriptionPath: 'meta.description',
+            }),
+          ],
+        },
       ],
     },
-    {
-      name: 'publishedAt',
-      type: 'date',
-      admin: { position: 'sidebar' },
-    },
+    { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
     slugField(),
   ],
   hooks: {
@@ -179,10 +199,7 @@ export const Pages: CollectionConfig<'pages'> = {
     afterDelete: [revalidateDelete],
   },
   versions: {
-    drafts: {
-      autosave: { interval: 100 },
-      schedulePublish: true,
-    },
+    drafts: { autosave: { interval: 100 }, schedulePublish: true },
     maxPerDoc: 50,
   },
 }
