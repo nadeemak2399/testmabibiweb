@@ -19,12 +19,43 @@ import { getServerSideURL } from '@/utilities/getURL'
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
 
+  // ✅ Fetch Payload header data (for favicon + injected code)
+  let favicon: string | undefined
+  let headCode: string | undefined
+  let bodyCode: string | undefined
+
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/globals/header`, {
+      next: { revalidate: 60 },
+    })
+
+    if (!res.ok) {
+      console.error('Failed to fetch header data:', res.status)
+    } else {
+      const headerData = await res.json()
+      favicon = headerData?.branding?.favicon?.url
+      headCode = headerData?.customCode?.headCode
+      bodyCode = headerData?.customCode?.bodyCode
+    }
+  } catch (error) {
+    console.error('Error fetching header data:', error)
+  }
+
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
-        <link href="/favicon.ico" rel="icon" sizes="32x32" />
-        <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+        {/* ✅ Dynamically insert favicon */}
+        {favicon && <link rel="icon" href={favicon} sizes="any" />}
+
+        {/* ✅ Font Awesome */}
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+
+        {/* ✅ Custom Head Code Injection */}
+        {headCode && <div dangerouslySetInnerHTML={{ __html: headCode }} />}
       </head>
       <body>
         <Providers>
@@ -38,6 +69,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {children}
           <Footer />
         </Providers>
+        {/* ✅ Custom Body Code Injection (e.g., chat widgets, tracking pixels) */}
+        {bodyCode && <div dangerouslySetInnerHTML={{ __html: bodyCode }} />}
       </body>
     </html>
   )

@@ -108,6 +108,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
+  fallbackLocale: null;
   globals: {
     header: Header;
     footer: Footer;
@@ -156,6 +157,11 @@ export interface UserAuthOperations {
 export interface Page {
   id: string;
   title: string;
+  postURL?: string | null;
+  /**
+   * Only one page should be set as homepage.
+   */
+  isHomePage?: boolean | null;
   hero: {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
     richText?: {
@@ -199,7 +205,49 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | {
+        content: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'richTextBlock';
+      }
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | {
+        heading?: string | null;
+        /**
+         * Enable this to show posts from all categories. If unchecked, you can select a specific category below.
+         */
+        showAllCategories?: boolean | null;
+        /**
+         * Choose which category’s posts to show. Hidden if "Show All Categories" is enabled.
+         */
+        category?: (string | null) | Category;
+        postsPerPage?: number | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'allCatPosts';
+      }
+    | FAQBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -207,6 +255,7 @@ export interface Page {
      */
     image?: (string | null) | Media;
     description?: string | null;
+    robots?: string | null;
   };
   publishedAt?: string | null;
   /**
@@ -225,6 +274,7 @@ export interface Page {
 export interface Post {
   id: string;
   title: string;
+  postURL?: string | null;
   heroImage?: (string | null) | Media;
   content: {
     root: {
@@ -780,6 +830,41 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FAQBlock".
+ */
+export interface FAQBlock {
+  heading: string;
+  intro?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  items?:
+    | {
+        question: string;
+        answer: string;
+        defaultOpen?: boolean | null;
+        anchor?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  className?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'faqBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1056,6 +1141,8 @@ export interface PayloadMigration {
  */
 export interface PagesSelect<T extends boolean = true> {
   title?: T;
+  postURL?: T;
+  isHomePage?: T;
   hero?:
     | T
     | {
@@ -1081,11 +1168,29 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
+        richTextBlock?:
+          | T
+          | {
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        allCatPosts?:
+          | T
+          | {
+              heading?: T;
+              showAllCategories?: T;
+              category?: T;
+              postsPerPage?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faqBlock?: T | FAQBlockSelect<T>;
       };
   meta?:
     | T
@@ -1093,6 +1198,7 @@ export interface PagesSelect<T extends boolean = true> {
         title?: T;
         image?: T;
         description?: T;
+        robots?: T;
       };
   publishedAt?: T;
   generateSlug?: T;
@@ -1187,10 +1293,31 @@ export interface FormBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FAQBlock_select".
+ */
+export interface FAQBlockSelect<T extends boolean = true> {
+  heading?: T;
+  intro?: T;
+  items?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        defaultOpen?: T;
+        anchor?: T;
+        id?: T;
+      };
+  className?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  postURL?: T;
   heroImage?: T;
   content?: T;
   relatedPosts?: T;
@@ -1634,7 +1761,12 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: string;
-  navItems?:
+  branding?: {
+    logo?: (string | null) | Media;
+    tagline?: string | null;
+    favicon?: (string | null) | Media;
+  };
+  navigation?:
     | {
         link: {
           type?: ('reference' | 'custom') | null;
@@ -1651,9 +1783,58 @@ export interface Header {
           url?: string | null;
           label: string;
         };
+        submenu?:
+          | {
+              link: {
+                type?: ('reference' | 'custom') | null;
+                newTab?: boolean | null;
+                reference?:
+                  | ({
+                      relationTo: 'pages';
+                      value: string | Page;
+                    } | null)
+                  | ({
+                      relationTo: 'posts';
+                      value: string | Post;
+                    } | null);
+                url?: string | null;
+                label: string;
+              };
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
+  ctaPrimary?: {
+    label?: string | null;
+    url?: string | null;
+    target?: ('_self' | '_blank') | null;
+    /**
+     * Use gradient styling
+     */
+    gradient?: boolean | null;
+  };
+  ctaSecondary?: {
+    label?: string | null;
+    url?: string | null;
+    target?: ('_self' | '_blank') | null;
+  };
+  auth?: {
+    loginLabel?: string | null;
+    loginUrl?: string | null;
+  };
+  className?: string | null;
+  customCode?: {
+    /**
+     * Paste HTML or JavaScript snippets here. It will be injected inside the <head> tag (e.g., Google Analytics, Search Console, etc.)
+     */
+    headCode?: string | null;
+    /**
+     * Paste code that should appear just before the closing </body> tag (e.g., chat widgets, tracking pixels).
+     */
+    bodyCode?: string | null;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1663,6 +1844,120 @@ export interface Header {
  */
 export interface Footer {
   id: string;
+  branding?: {
+    /**
+     * Overrides the default Logo component in the footer (SVG/PNG recommended).
+     */
+    logo?: (string | null) | Media;
+  };
+  /**
+   * Shown in the left column under the logo
+   */
+  contact?: {
+    phoneIcon?: string | null;
+    phone?: string | null;
+    emailIcon?: string | null;
+    email?: string | null;
+    addressIcon?: string | null;
+    address?: string | null;
+  };
+  /**
+   * Controls the top band background (color or image).
+   */
+  background?: {
+    mode?: ('color' | 'image' | 'imageOverlay') | null;
+    color?: string | null;
+    /**
+     * Large, wide image recommended
+     */
+    image?: (string | null) | Media;
+    imageFit?: ('cover' | 'contain') | null;
+    position?: ('top' | 'center' | 'bottom') | null;
+    repeat?: boolean | null;
+    /**
+     * Only used with Image + overlay
+     */
+    overlayOpacity?: number | null;
+    /**
+     * Bottom copyright bar color (optional)
+     */
+    bottomBarColor?: string | null;
+  };
+  menus?: {
+    packages?: {
+      heading?: string | null;
+      links?:
+        | {
+            link: {
+              type?: ('reference' | 'custom') | null;
+              newTab?: boolean | null;
+              reference?:
+                | ({
+                    relationTo: 'pages';
+                    value: string | Page;
+                  } | null)
+                | ({
+                    relationTo: 'posts';
+                    value: string | Post;
+                  } | null);
+              url?: string | null;
+              label: string;
+            };
+            id?: string | null;
+          }[]
+        | null;
+    };
+    resources?: {
+      heading?: string | null;
+      links?:
+        | {
+            link: {
+              type?: ('reference' | 'custom') | null;
+              newTab?: boolean | null;
+              reference?:
+                | ({
+                    relationTo: 'pages';
+                    value: string | Page;
+                  } | null)
+                | ({
+                    relationTo: 'posts';
+                    value: string | Post;
+                  } | null);
+              url?: string | null;
+              label: string;
+            };
+            id?: string | null;
+          }[]
+        | null;
+    };
+    company?: {
+      heading?: string | null;
+      links?:
+        | {
+            link: {
+              type?: ('reference' | 'custom') | null;
+              newTab?: boolean | null;
+              reference?:
+                | ({
+                    relationTo: 'pages';
+                    value: string | Page;
+                  } | null)
+                | ({
+                    relationTo: 'posts';
+                    value: string | Post;
+                  } | null);
+              url?: string | null;
+              label: string;
+            };
+            id?: string | null;
+          }[]
+        | null;
+    };
+  };
+  copyright?: string | null;
+  /**
+   * Legacy links; you can keep or migrate these into Menus above.
+   */
   navItems?:
     | {
         link: {
@@ -1691,7 +1986,14 @@ export interface Footer {
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
-  navItems?:
+  branding?:
+    | T
+    | {
+        logo?: T;
+        tagline?: T;
+        favicon?: T;
+      };
+  navigation?:
     | T
     | {
         link?:
@@ -1703,7 +2005,49 @@ export interface HeaderSelect<T extends boolean = true> {
               url?: T;
               label?: T;
             };
+        submenu?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                  };
+              id?: T;
+            };
         id?: T;
+      };
+  ctaPrimary?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        target?: T;
+        gradient?: T;
+      };
+  ctaSecondary?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        target?: T;
+      };
+  auth?:
+    | T
+    | {
+        loginLabel?: T;
+        loginUrl?: T;
+      };
+  className?: T;
+  customCode?:
+    | T
+    | {
+        headCode?: T;
+        bodyCode?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1714,6 +2058,95 @@ export interface HeaderSelect<T extends boolean = true> {
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
+  branding?:
+    | T
+    | {
+        logo?: T;
+      };
+  contact?:
+    | T
+    | {
+        phoneIcon?: T;
+        phone?: T;
+        emailIcon?: T;
+        email?: T;
+        addressIcon?: T;
+        address?: T;
+      };
+  background?:
+    | T
+    | {
+        mode?: T;
+        color?: T;
+        image?: T;
+        imageFit?: T;
+        position?: T;
+        repeat?: T;
+        overlayOpacity?: T;
+        bottomBarColor?: T;
+      };
+  menus?:
+    | T
+    | {
+        packages?:
+          | T
+          | {
+              heading?: T;
+              links?:
+                | T
+                | {
+                    link?:
+                      | T
+                      | {
+                          type?: T;
+                          newTab?: T;
+                          reference?: T;
+                          url?: T;
+                          label?: T;
+                        };
+                    id?: T;
+                  };
+            };
+        resources?:
+          | T
+          | {
+              heading?: T;
+              links?:
+                | T
+                | {
+                    link?:
+                      | T
+                      | {
+                          type?: T;
+                          newTab?: T;
+                          reference?: T;
+                          url?: T;
+                          label?: T;
+                        };
+                    id?: T;
+                  };
+            };
+        company?:
+          | T
+          | {
+              heading?: T;
+              links?:
+                | T
+                | {
+                    link?:
+                      | T
+                      | {
+                          type?: T;
+                          newTab?: T;
+                          reference?: T;
+                          url?: T;
+                          label?: T;
+                        };
+                    id?: T;
+                  };
+            };
+      };
+  copyright?: T;
   navItems?:
     | T
     | {

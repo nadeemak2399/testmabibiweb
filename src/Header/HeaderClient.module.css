@@ -1,0 +1,19 @@
+/* HeaderClient.module.css */
+.gradientButton {
+  background: linear-gradient(90deg,#7c4dff 0%, #4f7bff 100%);
+  color: white;
+  box-shadow: 0 8px 22px rgba(79,123,255,0.18);
+}
+
+
+.header-cont {
+  border-radius: 20px;
+  background: white;
+  border: 1px solid #d4d4d4;
+  margin-top: 10px;
+  box-shadow: 0 4px 6px 0 rgba(67,46,134,.04);
+}
+
+
+
+

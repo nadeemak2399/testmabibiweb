@@ -1,0 +1,57 @@
+/* src/blocks/FAQBlock/FAQBlock.module.css */
+.section { padding: 3rem 0; background: #ffffff; }
+.container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+
+.header { text-align: center; margin: 0 auto 1.5rem; max-width: 48rem; }
+.title {
+  margin: 0 0 .5rem;
+  font-weight: 800; letter-spacing: -.01em;
+  font-size: clamp(1.75rem, 1.1rem + 2vw, 2.25rem);
+  color: #0f172a;
+}
+.intro { color: #475569; line-height: 1.7; }
+
+.list { margin-top: 1.25rem; display: grid; gap: .75rem; }
+
+.item {
+  background: #fff;
+  border: 1px solid rgba(2,6,23,.08);
+  border-radius: 12px;
+  box-shadow: 0 6px 14px rgba(2,6,23,.05);
+  overflow: hidden;
+}
+
+.summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  color: #0f172a;
+  position: relative;
+}
+.summary::-webkit-details-marker { display: none; }
+
+/* caret */
+.summary::after {
+  content: '';
+  position: absolute; right: 1rem; top: 50%; transform: translateY(-50%) rotate(0deg);
+  width: 10px; height: 10px; border-right: 2px solid #0f172a; border-bottom: 2px solid #0f172a;
+  transition: transform .2s ease;
+  transform-origin: center;
+  rotate: 45deg; /* pointing down-right arrow */
+}
+
+/* when open, rotate caret up */
+.open .summary::after {
+  transform: translateY(-50%) rotate(-135deg);
+}
+
+.answer {
+  padding: 0 1.25rem 1rem;
+  color: #1f2937;
+  line-height: 1.7;
+  border-top: 1px solid #e5e7eb;
+}
+
+.answer :where(h3,h4){ margin: .75rem 0 .25rem; }
+.answer :where(p,ul,ol){ margin: .5rem 0; }

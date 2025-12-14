@@ -7,6 +7,8 @@ import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { AllCatPosts } from '../../blocks/AllCatPosts/config'
+import { FAQBlock } from '../../blocks/FAQBlock/config';
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -21,6 +23,11 @@ import {
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
 
+import {
+  lexicalEditor,
+  EXPERIMENTAL_TableFeature,
+} from '@payloadcms/richtext-lexical'
+
 export const Pages: CollectionConfig<'pages'> = {
   slug: 'pages',
   access: {
@@ -29,9 +36,6 @@ export const Pages: CollectionConfig<'pages'> = {
     read: authenticatedOrPublished,
     update: authenticated,
   },
-  // This config controls what's populated by default when a page is referenced
-  // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
-  // Type safe if the collection slug generic is passed to `CollectionConfig` - `CollectionConfig<'pages'>
   defaultPopulate: {
     title: true,
     slug: true,
@@ -61,6 +65,29 @@ export const Pages: CollectionConfig<'pages'> = {
       required: true,
     },
     {
+    name: 'postURL',
+    type: 'text',
+    admin: { readOnly: true },
+    hooks: {
+      afterRead: [
+        ({ data }) => {
+          if (!data?.slug) return '';
+          const url = `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/posts/${data.slug}`;
+          return url;
+        },
+      ],
+    },
+  },
+  {
+      name: 'isHomePage',
+      type: 'checkbox',
+      label: 'Set as homepage',
+      defaultValue: false,
+      admin: {
+        description: 'Only one page should be set as homepage.',
+      },
+    },
+    {
       type: 'tabs',
       tabs: [
         {
@@ -72,7 +99,38 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock],
+              blocks: [
+                {
+                  slug: 'richTextBlock',
+                  labels: {
+                    singular: 'Rich Text',
+                    plural: 'Rich Texts',
+                  },
+                  fields: [
+                    {
+                      name: 'content',
+                      type: 'richText',
+                      required: true,
+                      editor: lexicalEditor({
+                        admin: {
+                          placeholder: 'Start writing here...',
+                        },
+                        features: ({ defaultFeatures }) => [
+                          ...defaultFeatures,         // keep default rich text features
+                          EXPERIMENTAL_TableFeature(), // enable table support
+                        ],
+                      }),
+                    },
+                  ],
+                },
+                CallToAction,
+                Content,
+                MediaBlock,
+                Archive,
+                FormBlock,
+                AllCatPosts,
+                FAQBlock,
+              ],
               required: true,
               admin: {
                 initCollapsed: true,
@@ -82,40 +140,36 @@ export const Pages: CollectionConfig<'pages'> = {
           label: 'Content',
         },
         {
-          name: 'meta',
-          label: 'SEO',
-          fields: [
-            OverviewField({
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-              imagePath: 'meta.image',
-            }),
-            MetaTitleField({
-              hasGenerateFn: true,
-            }),
-            MetaImageField({
-              relationTo: 'media',
-            }),
-
-            MetaDescriptionField({}),
-            PreviewField({
-              // if the `generateUrl` function is configured
-              hasGenerateFn: true,
-
-              // field paths to match the target field for data
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-            }),
-          ],
-        },
+  name: 'meta',
+  label: 'SEO',
+  fields: [
+    OverviewField({
+      titlePath: 'meta.title',
+      descriptionPath: 'meta.description',
+      imagePath: 'meta.image',
+    }),
+    MetaTitleField({ hasGenerateFn: true }),
+    MetaImageField({ relationTo: 'media' }),
+    MetaDescriptionField({}),
+    {
+      name: 'robots',
+      type: 'text',
+      admin: { hidden: true },
+    },
+    PreviewField({
+      hasGenerateFn: true,
+      titlePath: 'meta.title',
+      descriptionPath: 'meta.description',
+    }),
+  ],
+}
+,
       ],
     },
     {
       name: 'publishedAt',
       type: 'date',
-      admin: {
-        position: 'sidebar',
-      },
+      admin: { position: 'sidebar' },
     },
     slugField(),
   ],
@@ -126,9 +180,7 @@ export const Pages: CollectionConfig<'pages'> = {
   },
   versions: {
     drafts: {
-      autosave: {
-        interval: 100, // We set this interval for optimal live preview
-      },
+      autosave: { interval: 100 },
       schedulePublish: true,
     },
     maxPerDoc: 50,
