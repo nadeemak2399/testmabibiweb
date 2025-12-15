@@ -14,6 +14,9 @@ importers:
       '@payloadcms/db-mongodb':
         specifier: 3.68.3
         version: 3.68.3(payload@3.68.3(graphql@16.12.0)(typescript@5.7.3))
+      '@payloadcms/email-nodemailer':
+        specifier: ^3.68.4
+        version: 3.68.4(payload@3.68.3(graphql@16.12.0)(typescript@5.7.3))
       '@payloadcms/live-preview-react':
         specifier: 3.68.3
         version: 3.68.3(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -83,6 +86,9 @@ importers:
       next-sitemap:
         specifier: ^4.2.3
         version: 4.2.3(next@15.4.9(@babel/core@7.28.5)(@playwright/test@1.56.1)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(sass@1.77.4))
+      nodemailer:
+        specifier: ^7.0.11
+        version: 7.0.11
       payload:
         specifier: 3.68.3
         version: 3.68.3(graphql@16.12.0)(typescript@5.7.3)
@@ -1081,6 +1087,12 @@ packages:
     resolution: {integrity: sha512-8svYjJF2gd2VM8k2srFUiMxGtyDfj1JVnlyGuC9f93e9HlBGapysMgyvBxYbD5fB22sw16XGCD49Qxn7XHTpIg==}
     peerDependencies:
       payload: 3.68.3
+
+  '@payloadcms/email-nodemailer@3.68.4':
+    resolution: {integrity: sha512-g/Y8c3HPNRDLycVJWuBz2BqXBFXibjcJjY6JiJbnZBc8El2at4di4P+RF26YDB7M7BSf2SV+pE7r5/gmTl2I8w==}
+    engines: {node: ^18.20.2 || >=20.9.0}
+    peerDependencies:
+      payload: 3.68.4
 
   '@payloadcms/graphql@3.68.3':
     resolution: {integrity: sha512-rXb2chbgYBqnKSN8RJ35QbyUziDIFlNFXLUJhztgs1FvOokzOcPO/hcfOe2F1PyA3FGDSq6M4R+IB/bFsW+SNw==}
@@ -3374,6 +3386,14 @@ packages:
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
 
+  nodemailer@7.0.11:
+    resolution: {integrity: sha512-gnXhNRE0FNhD7wPSCGhdNh46Hs6nm+uTyg+Kq0cZukNQiYdnCsoQjodNP9BQVG9XrcK/v6/MgpAPBUFyzh9pvw==}
+    engines: {node: '>=6.0.0'}
+
+  nodemailer@7.0.9:
+    resolution: {integrity: sha512-9/Qm0qXIByEP8lEV2qOqcAW7bRpL8CR9jcTwk3NBnHJNmP9fIJ86g2fgmIXqHY+nj55ZEMwWqYAT2QTDpRUYiQ==}
+    engines: {node: '>=6.0.0'}
+
   noms@0.0.0:
     resolution: {integrity: sha512-lNDU9VJaOPxUmXcLb+HQFeUgQQPtMI24Gt6hgfuMHRJgMRHMF/qZ4HJD3GDru4sSw9IQl2jPjAYnQrdIeLbwow==}
 
@@ -5380,6 +5400,11 @@ snapshots:
       - snappy
       - socks
       - supports-color
+
+  '@payloadcms/email-nodemailer@3.68.4(payload@3.68.3(graphql@16.12.0)(typescript@5.7.3))':
+    dependencies:
+      nodemailer: 7.0.9
+      payload: 3.68.3(graphql@16.12.0)(typescript@5.7.3)
 
   '@payloadcms/graphql@3.68.3(graphql@16.12.0)(payload@3.68.3(graphql@16.12.0)(typescript@5.7.3))(typescript@5.7.3)':
     dependencies:
@@ -7983,6 +8008,10 @@ snapshots:
       - babel-plugin-macros
 
   node-releases@2.0.27: {}
+
+  nodemailer@7.0.11: {}
+
+  nodemailer@7.0.9: {}
 
   noms@0.0.0:
     dependencies:

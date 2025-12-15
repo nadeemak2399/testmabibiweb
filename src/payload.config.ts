@@ -14,11 +14,33 @@ import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+
+
+  email: nodemailerAdapter({
+    defaultFromAddress: 'no-reply@yourdomain.com',
+    defaultFromName: 'MaBibiche',
+    transportOptions: {
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    },
+  }),
+
+  routes: {
+    admin: '/secretpanel2196', // Change '/dashboard' to your desired path
+    // You can also change other routes if needed:
+    // api: '/payload-api',
+    // graphQL: '/graphql-api',
+  },
   admin: {
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
