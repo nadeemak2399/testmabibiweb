@@ -247,6 +247,7 @@ export interface Page {
         blockType: 'allCatPosts';
       }
     | FAQBlock
+    | CenteredHeroBlock
   )[];
   meta?: {
     title?: string | null;
@@ -865,6 +866,50 @@ export interface FAQBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CenteredHeroBlock".
+ */
+export interface CenteredHeroBlock {
+  title: string;
+  description?: string | null;
+  /**
+   * Choose a color or image background and overlay.
+   */
+  background?: {
+    mode?: ('color' | 'image' | 'imageOverlay') | null;
+    color?: string | null;
+    /**
+     * Large wide image recommended (desktop)
+     */
+    image?: (string | null) | Media;
+    imageFit?: ('cover' | 'contain') | null;
+    position?: ('top' | 'center' | 'bottom') | null;
+    repeat?: boolean | null;
+    overlayColor?: string | null;
+    /**
+     * 0 = transparent, 100 = opaque
+     */
+    overlayOpacity?: number | null;
+  };
+  decorations?: {
+    /**
+     * Optional decorative image on the left
+     */
+    leftImage?: (string | null) | Media;
+    /**
+     * Optional decorative image on the right
+     */
+    rightImage?: (string | null) | Media;
+  };
+  /**
+   * Optional extra CSS class for the section
+   */
+  className?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'centeredHeroBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1191,6 +1236,7 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
         faqBlock?: T | FAQBlockSelect<T>;
+        centeredHeroBlock?: T | CenteredHeroBlockSelect<T>;
       };
   meta?:
     | T
@@ -1306,6 +1352,35 @@ export interface FAQBlockSelect<T extends boolean = true> {
         defaultOpen?: T;
         anchor?: T;
         id?: T;
+      };
+  className?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CenteredHeroBlock_select".
+ */
+export interface CenteredHeroBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  background?:
+    | T
+    | {
+        mode?: T;
+        color?: T;
+        image?: T;
+        imageFit?: T;
+        position?: T;
+        repeat?: T;
+        overlayColor?: T;
+        overlayOpacity?: T;
+      };
+  decorations?:
+    | T
+    | {
+        leftImage?: T;
+        rightImage?: T;
       };
   className?: T;
   id?: T;

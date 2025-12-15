@@ -1,17 +1,13 @@
 import React, { Fragment } from 'react'
-
 import type { Page } from '@/payload-types'
-
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import AllCatPostsBlock from '@/blocks/AllCatPosts/Component'
-import FAQBlockComponent from '@/blocks/FAQBlock/Component';
-
-
-
+import FAQBlockComponent from '@/blocks/FAQBlock/Component'
+import CenteredHeroBlock from '@/blocks/CenteredHeroBlock/Component'
 
 type BlockType = Page['layout'][0]['blockType']
 
@@ -23,6 +19,7 @@ const blockComponents: Partial<Record<BlockType, React.FC<any>>> = {
   mediaBlock: MediaBlock,
   faqBlock: FAQBlockComponent,
   allCatPosts: AllCatPostsBlock,
+  centeredHeroBlock: CenteredHeroBlock,
 }
 
 export const RenderBlocks: React.FC<{

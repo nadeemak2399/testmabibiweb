@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Archive } from '../../blocks/ArchiveBlock/config'
@@ -9,6 +8,7 @@ import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { AllCatPosts } from '../../blocks/AllCatPosts/config'
 import { FAQBlock } from '../../blocks/FAQBlock/config';
+import { CenteredHeroBlock } from '../../blocks/CenteredHeroBlock/config';
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -92,7 +92,7 @@ export const Pages: CollectionConfig<'pages'> = {
         afterRead: [
           ({ data }) => {
             if (!data?.slug) return '';
-            return `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/posts/${data.slug}`;
+            return `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/${data.slug}`;
           },
         ],
       },
@@ -161,6 +161,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 FormBlock,
                 AllCatPosts,
                 FAQBlock,
+                CenteredHeroBlock,
               ],
               required: true,
               admin: { initCollapsed: true },
