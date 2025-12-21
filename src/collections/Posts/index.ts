@@ -1,8 +1,10 @@
 import type { CollectionConfig } from 'payload'
-
+import { TableBlock } from '../../blocks/TableBlock'
+import { HTMLBlock } from '../../blocks/HTMLBlock'
 import {
   lexicalEditor,
   BoldFeature,
+  BlocksFeature,
   ItalicFeature,
   UnderlineFeature,
   StrikethroughFeature,
@@ -135,9 +137,17 @@ export const Posts: CollectionConfig<'posts'> = {
                     HorizontalRuleFeature(),
                     // Toolbars:
                     FixedToolbarFeature(),
-                    InlineToolbarFeature(),
+                    InlineToolbarFeature(),// ✅ Tables (THIS IS ALL YOU NEED)
+                   // ✅ ENABLE BLOCKS HERE
+                  BlocksFeature({
+                    blocks: [
+                      TableBlock,
+                      HTMLBlock,
+                    ],
+                  }),
                   ],
                 }),
+               
               },
           ],
           label: 'Content',

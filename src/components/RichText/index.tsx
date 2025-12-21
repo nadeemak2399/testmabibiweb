@@ -1,3 +1,4 @@
+import React from 'react'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import {
   DefaultNodeTypes,
@@ -19,10 +20,27 @@ import type {
 } from '@/payload-types'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { cn } from '@/utilities/ui'
+import type { JsonObject } from 'payload'
 
+/* ------------------------------------------------ */
+/* Types */
+/* ------------------------------------------------ */
+
+type HTMLBlockProps = {
+  html: string
+}
+type BlockConverterProps<T extends JsonObject> = {
+  node: SerializedBlockNode<T>
+}
 type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<CTABlockProps | MediaBlockProps | CodeBlockProps>
+  | SerializedBlockNode<
+      CTABlockProps | MediaBlockProps | CodeBlockProps | HTMLBlockProps
+    >
+
+/* ------------------------------------------------ */
+/* Internal links */
+/* ------------------------------------------------ */
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const { value, relationTo } = linkNode.fields.doc!
@@ -32,6 +50,10 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const slug = value.slug
   return relationTo === 'posts' ? `/posts/${slug}` : `/${slug}`
 }
+
+/* ------------------------------------------------ */
+/* JSX Converters */
+/* ------------------------------------------------ */
 
 const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({
   ...defaultConverters,
@@ -47,10 +69,30 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
         disableInnerContainer={true}
       />
     ),
-    code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
-    cta: ({ node }) => <CallToActionBlock {...node.fields} />,
+
+    code: ({ node }) => (
+      <CodeBlock className="col-start-2" {...node.fields} />
+    ),
+
+    cta: ({ node }) => (
+      <CallToActionBlock {...node.fields} />
+    ),
+
+    /* ✅ HTML BLOCK */
+    html: ({ node }: BlockConverterProps<HTMLBlockProps>) => (
+      <div
+        className="prose max-w-none overflow-x-auto"
+        dangerouslySetInnerHTML={{
+          __html: node.fields.html,
+        }}
+      />
+    ),
   },
 })
+
+/* ------------------------------------------------ */
+/* Component */
+/* ------------------------------------------------ */
 
 type Props = {
   data: DefaultTypedEditorState
@@ -60,6 +102,7 @@ type Props = {
 
 export default function RichText(props: Props) {
   const { className, enableProse = true, enableGutter = true, ...rest } = props
+
   return (
     <ConvertRichText
       converters={jsxConverters}

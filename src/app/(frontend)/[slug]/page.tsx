@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
@@ -96,18 +95,35 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
 
   const payload = await getPayload({ config: configPromise })
 
-  const result = await payload.find({
-    collection: 'pages',
-    draft,
-    limit: 1,
-    pagination: false,
-    overrideAccess: draft,
-    where: {
-      slug: {
-        equals: slug,
-      },
-    },
-  })
+  let result
 
+  // ✅ If slug is "home" (the root / route), load the page marked as homepage
+  if (slug === 'home') {
+    result = await payload.find({
+      collection: 'pages',
+      draft,
+      limit: 1,
+      pagination: false,
+      overrideAccess: draft,
+      where: {
+        isHomePage: {
+          equals: true,
+        },
+      },
+    })
+  } else {
+    result = await payload.find({
+      collection: 'pages',
+      draft,
+      limit: 1,
+      pagination: false,
+      overrideAccess: draft,
+      where: {
+        slug: {
+          equals: slug,
+        },
+      },
+    })
+  }
   return result.docs?.[0] || null
 })
