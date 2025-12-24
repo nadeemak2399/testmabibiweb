@@ -3,10 +3,9 @@ import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { draftMode } from 'next/headers'
 import React, { cache } from 'react'
 import RichText from '@/components/RichText'
-import TocClient from './toc.client' // new client component (create file next)
+import { extractHeadings } from './extractHeadings'
 import type { Post } from '@/payload-types'
 import Link from 'next/link'
 import { generateMeta } from '@/utilities/generateMeta'
@@ -15,6 +14,10 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import Image from 'next/image'
 import './style.css'
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+import TocClient from './toc.client'
+
+
+
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -46,7 +49,7 @@ type Args = {
 
 
 export default async function Post({ params: paramsPromise }: Args) {
-  const { isEnabled: draft } = await draftMode()
+  const draft = process.env.NODE_ENV !== 'production'
   const { slug = '' } = await paramsPromise
   // Decode to support slugs with special characters
   const decodedSlug = decodeURIComponent(slug)
@@ -78,7 +81,7 @@ const editorData: DefaultTypedEditorState = post.content as DefaultTypedEditorSt
   },
 }
 
-
+const headings = extractHeadings(editorData)
    return (
     <article className="post-article">
       <PageClient />
@@ -98,8 +101,7 @@ const editorData: DefaultTypedEditorState = post.content as DefaultTypedEditorSt
           <div className="post-grid">
             {/* Left: client-side TOC */}
             <aside className="post-sidebar">
-              {/* The TocClient will find headings inside #post-content and render the TOC */}
-              <TocClient />
+              <TocClient items={headings} />
             </aside>
 
             {/* Right: the article content (server-rendered via RichText) */}
@@ -157,7 +159,6 @@ const editorData: DefaultTypedEditorState = post.content as DefaultTypedEditorSt
 
 
               {/* NOTE: RichText renders HTML/lexical content server-side */}
-              <div id="post-content">
                 <div id="post-content">
   <div className="post-title">
     <h1 className="mb-3 text-3xl md:text-5xl lg:text-6xl">{post.title}</h1>
@@ -277,7 +278,6 @@ const editorData: DefaultTypedEditorState = post.content as DefaultTypedEditorSt
   
 </div>
 
-              </div>
 
               {post.relatedPosts && post.relatedPosts.length > 0 && (
                 <RelatedPosts
@@ -350,7 +350,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 }
 
 const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
-  const { isEnabled: draft } = await draftMode()
+  const draft = process.env.NODE_ENV !== 'production'
 
   const payload = await getPayload({ config: configPromise })
 
@@ -370,7 +370,7 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
   return result.docs?.[0] || null
 })
 const queryRelatedPosts = cache(async ({ categoryIds, currentPostId }: { categoryIds: string[]; currentPostId: string }) => {
-  const { isEnabled: draft } = await draftMode()
+  const draft = process.env.NODE_ENV !== 'production'
   const payload = await getPayload({ config: configPromise })
 
   const result = await payload.find({

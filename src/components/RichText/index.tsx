@@ -22,6 +22,15 @@ import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { cn } from '@/utilities/ui'
 import type { JsonObject } from 'payload'
 
+
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .slice(0, 80)
+}
+
 /* ------------------------------------------------ */
 /* Types */
 /* ------------------------------------------------ */
@@ -58,6 +67,29 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
 const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({
   ...defaultConverters,
   ...LinkJSXConverter({ internalDocToHref }),
+
+heading: (args) => {
+  const { node, nodesToJSX, converters } = args
+
+  // Only override h2
+  if (node.tag === 'h2') {
+    const text =
+      node.children?.map((child: any) => child.text || '').join('').trim() || ''
+    const id = slugify(text)
+
+    return <h2 id={id}>{nodesToJSX({ nodes: node.children })}</h2>
+  }
+
+  // Fallback to default heading safely
+  const defaultHeading = defaultConverters?.heading
+  if (typeof defaultHeading === 'function') {
+    return defaultHeading(args)
+  }
+
+  // If defaultHeading is not a function, render normally
+  return <>{nodesToJSX({ nodes: node.children })}</>
+},
+
   blocks: {
     mediaBlock: ({ node }) => (
       <MediaBlock
